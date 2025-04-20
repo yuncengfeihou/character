@@ -4,7 +4,7 @@ import { getContext } from "../../../extensions.js";
 import { toastr } from "../../../../script.js";
 
 
-const extensionName = "get-character-info"; // 插件文件夹名称
+const extensionName = "character"; // 插件文件夹名称
 // const extensionFolderPath = `scripts/extensions/third-party/${extensionName}`; // 这个插件暂时不需要用到文件夹路径
 // const extensionSettings = extension_settings[extensionName]; // 这个插件暂时不需要设置
 // const defaultSettings = {}; // 这个插件暂时不需要默认设置
