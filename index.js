@@ -1,6 +1,8 @@
-// 从 SillyTavern 提供的模块中导入 getContext 函数
+// 从 SillyTavern 提供的模块中导入需要用到的全局变量和函数
+// 注意路径可能需要根据实际情况微调，但通常 script.js 在根目录
+import { this_chid, characters } from "../../../../script.js";
+// 也可以保留 getContext 用于获取其他信息，但不再用于获取角色
 import { getContext } from "../../../extensions.js";
-
 
 
 const extensionName = "character"; // 插件文件夹名称
@@ -9,47 +11,52 @@ const extensionName = "character"; // 插件文件夹名称
  * 获取并显示当前加载的角色的核心描述信息。
  */
 function displayCharacterInfo() {
-    console.log(`[${extensionName}] Button clicked. Attempting to get character info...`); // 日志：函数开始执行
+    console.log(`[${extensionName}] Button clicked. Attempting to get character info...`);
 
-    // 1. 获取上下文
+    // 1. 打印 getContext() 的内容 (用于调试其他信息，非角色获取)
     const context = getContext();
-
-    // 2. 详细日志：打印整个 context 对象，检查其内容
     console.log(`[${extensionName}] Raw context object received:`, context);
-    // 使用 console.dir 可以更好地在某些浏览器中查看对象结构
-    console.dir(context);
+    console.dir(context); // 用 dir 可能更清晰
 
-    // 3. 检查 context 是否有效
-    if (!context) {
-        console.error(`[${extensionName}] 获取角色信息失败：getContext() 返回了无效值 (null, undefined, etc.).`);
-        toastr.error("无法获取应用上下文。", "获取角色信息失败");
-        return;
-    }
+    // 2. 检查 this_chid 是否有效
+    console.log(`[${extensionName}] Value of global 'this_chid':`, this_chid);
 
-    // 4. 尝试访问 context.character
-    const currentCharacter = context.character;
-    console.log(`[${extensionName}] Value of context.character:`, currentCharacter);
-
-    // 5. 检查 currentCharacter 是否存在
-    if (!currentCharacter) {
-        const availableKeys = Object.keys(context);
-        console.warn(`[${extensionName}] 获取角色信息失败：context.character 不存在或为 null/undefined。`);
-        console.log(`[${extensionName}] 上下文中可用的键：`, availableKeys); // 日志：打印 context 对象的所有键名
-        toastr.warning("当前没有角色被加载，或在上下文中未找到角色对象。", "获取角色信息失败");
+    // this_chid 是当前角色的索引。它应该是数字类型且 >= 0
+    if (typeof this_chid !== 'number' || this_chid < 0) {
+        console.warn(`[${extensionName}] 获取角色信息失败：全局变量 'this_chid' 无效或未定义 (value: ${this_chid})。`);
+        toastr.warning("当前没有角色被选中，或 'this_chid' 无效。", "获取角色信息失败");
         // 提示用户检查是否已加载角色
         toastr.info("请确保您已在聊天界面加载了一个角色。");
         return;
     }
 
+    // 3. 检查 characters 数组是否存在且 this_chid 是否在范围内
+    console.log(`[${extensionName}] Global 'characters' array exists:`, Array.isArray(characters));
+    if (!Array.isArray(characters) || this_chid >= characters.length) {
+        console.warn(`[${extensionName}] 获取角色信息失败：全局 'characters' 数组不存在或 'this_chid' (${this_chid}) 超出范围 (length: ${characters?.length})。`);
+        toastr.error("无法访问角色列表或角色索引无效。", "获取角色信息失败");
+        return;
+    }
+
+    // 4. 通过索引获取当前角色对象
+    const currentCharacter = characters[this_chid];
+    console.log(`[${extensionName}] Retrieved character object using characters[this_chid]:`, currentCharacter);
+
+    // 5. 检查获取到的 currentCharacter 对象是否有效
+    if (!currentCharacter) {
+        console.warn(`[${extensionName}] 获取角色信息失败：characters[${this_chid}] 返回了无效值。`);
+        toastr.warning(`无法从 characters 数组中获取索引为 ${this_chid} 的角色。`, "获取角色信息失败");
+        return;
+    }
+
     // 6. 检查 currentCharacter.data 是否存在且为对象
-    //    (因为根据 characters.js, .data 应该是个对象)
     console.log(`[${extensionName}] currentCharacter exists. Checking currentCharacter.data...`);
     console.log(`[${extensionName}] Value of currentCharacter.data:`, currentCharacter.data);
     console.log(`[${extensionName}] Type of currentCharacter.data:`, typeof currentCharacter.data);
 
+    // 根据 characters.js 的分析，核心数据应该在 .data 对象里
     if (!currentCharacter.data || typeof currentCharacter.data !== 'object') {
         console.warn(`[${extensionName}] 获取角色信息失败：currentCharacter 存在，但其 'data' 属性不存在、不是对象或为 null/undefined。`);
-        // 日志：打印 character 对象，检查其内部结构
         console.log(`[${extensionName}] Current character object (inspect structure):`, currentCharacter);
         toastr.warning("角色数据 (data 属性) 不完整或格式错误，无法提取核心信息。", "获取角色信息失败");
         return;
@@ -64,6 +71,7 @@ function displayCharacterInfo() {
         scenario: currentCharacter.data.scenario,
         first_mes: currentCharacter.data.first_mes,
         mes_example: currentCharacter.data.mes_example
+        // 你可以根据需要从 currentCharacter.data 添加更多字段
     };
 
     console.log(`[${extensionName}] 当前加载的角色核心信息:`);
