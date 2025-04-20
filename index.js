@@ -1,7 +1,5 @@
 // 从 SillyTavern 提供的模块中导入 getContext 函数
 import { getContext } from "../../../extensions.js";
-// 导入 toastr 用于显示提示信息 (可选，但方便反馈)
-import { toastr } from "../../../../script.js";
 
 
 const extensionName = "character"; // 插件文件夹名称
