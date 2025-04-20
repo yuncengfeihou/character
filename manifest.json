@@ -1,0 +1,11 @@
+{
+    "display_name": "获取角色信息插件",
+    "loading_order": 4,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": null,
+    "author": "你的名字",
+    "version": "1.0.0",
+    "homePage": ""
+}
